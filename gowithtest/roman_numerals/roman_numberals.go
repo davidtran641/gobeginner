@@ -27,13 +27,16 @@ var allRomanNumerals = RomanNumerals{
 	{1, "I"},
 }
 
-func (r RomanNumerals) ValueOf(symbol string) int {
-	for _, s := range r {
-		if s.Symbol == symbol {
-			return s.Value
-		}
+var allRomanNumeralsDict = func() map[string]int {
+	dict := make(map[string]int)
+	for _, v := range allRomanNumerals {
+		dict[v.Symbol] = v.Value
 	}
-	return 0
+	return dict
+}()
+
+func (r RomanNumerals) ValueOf(symbols ...byte) int {
+	return allRomanNumeralsDict[string(symbols)]
 }
 
 // ConvertToRoman return roman string number from arabic number
@@ -53,27 +56,25 @@ func ConvertToRoman(arabic int) string {
 // ConvertToNumeric return arabic from roman string number
 func ConvertToNumeric(roman string) int {
 	total := 0
-
-	for i := 0; i < len(roman); i++ {
-		symbol := roman[i]
-
-		// look ahead
-		if i+1 < len(roman) && isSubtractive(symbol) {
-			nextSymbol := roman[i+1]
-
-			potentialGroup := string([]byte{symbol, nextSymbol})
-
-			if value := allRomanNumerals.ValueOf(potentialGroup); value != 0 {
-				total += value
-				i++
-			} else {
-				total += allRomanNumerals.ValueOf(string([]byte{symbol}))
-			}
-		} else {
-			total += allRomanNumerals.ValueOf(string([]byte{symbol}))
-		}
+	for _, symbols := range parseSymbols(roman) {
+		total += allRomanNumerals.ValueOf(symbols...)
 	}
 	return total
+}
+
+func parseSymbols(roman string) (symbols [][]byte) {
+	for i := 0; i < len(roman); i++ {
+		symbol := roman[i]
+		isNotAtEnd := (i+1 < len(roman))
+
+		if isNotAtEnd && isSubtractive(symbol) && allRomanNumerals.ValueOf(symbol, roman[i+1]) != 0 {
+			symbols = append(symbols, []byte{symbol, roman[i+1]})
+			i++
+		} else {
+			symbols = append(symbols, []byte{symbol})
+		}
+	}
+	return symbols
 }
 
 func isSubtractive(symbol uint8) bool {
