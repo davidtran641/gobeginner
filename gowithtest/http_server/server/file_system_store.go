@@ -11,6 +11,11 @@ type FileSystemPlayStore struct {
 	database io.ReadWriteSeeker
 }
 
+// NewPlayStore
+func NewPlayerStore(db io.ReadWriteSeeker) FileSystemPlayStore {
+	return FileSystemPlayStore{db}
+}
+
 // GetLeague returns list of players with score
 func (f *FileSystemPlayStore) GetLeague() League {
 	_, err := f.database.Seek(0, 0)
