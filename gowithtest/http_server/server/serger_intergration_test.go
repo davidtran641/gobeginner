@@ -9,9 +9,12 @@ import (
 )
 
 func TestRecordingWins(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, "")
+	database, cleanDatabase := createTempFile(t, "[]")
 	defer cleanDatabase()
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
+
+	test.AssertEqual(t, nil, err)
+
 	server := NewPlayerServer(store)
 
 	player := "Pepper"
@@ -28,9 +31,9 @@ func TestRecordingWins(t *testing.T) {
 }
 
 func TestRecordWin(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, "")
+	database, cleanDatabase := createTempFile(t, "[]")
 	defer cleanDatabase()
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
 	server := NewPlayerServer(store)
 
 	player := "Julia"
@@ -48,4 +51,5 @@ func TestRecordWin(t *testing.T) {
 
 	got := getLeagueFromResponse(t, response.Body)
 	test.AssertEqual(t, want, got)
+	test.AssertEqual(t, nil, err)
 }

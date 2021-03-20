@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 )
@@ -13,14 +14,35 @@ type FileSystemPlayStore struct {
 }
 
 // NewFileSystemPlayerStore return FileSystemPlayStore connect to given db
-func NewFileSystemPlayerStore(db *os.File) *FileSystemPlayStore {
-	db.Seek(0, 0)
-	league, _ := NewLeague(db)
+func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayStore, error) {
+	err := initPlayerDbFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	league, err := NewLeague(file)
+
+	if err != nil {
+		return nil, fmt.Errorf("can't load player store from file %s, error: %v", file.Name(), err)
+	}
 
 	return &FileSystemPlayStore{
-		database: json.NewEncoder(&tape{db}),
+		database: json.NewEncoder(&tape{file}),
 		league:   league,
+	}, nil
+}
+
+func initPlayerDbFile(file *os.File) error {
+	file.Seek(0, 0)
+	info, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("can't get info from file %v, %s", file.Name(), err)
 	}
+	if info.Size() == 0 {
+		file.Write([]byte("[]"))
+		file.Seek(0, 0)
+	}
+	return nil
 }
 
 // GetLeague returns list of players with score

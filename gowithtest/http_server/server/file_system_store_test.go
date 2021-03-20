@@ -17,7 +17,7 @@ func TestFileSystemStore(t *testing.T) {
 	`)
 	defer cleanDatabase()
 
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
 
 	got := store.GetLeague()
 
@@ -25,7 +25,7 @@ func TestFileSystemStore(t *testing.T) {
 		{"Julia", 10},
 		{"Bean", 20},
 	}
-
+	test.AssertEqual(t, nil, err)
 	test.AssertEqual(t, want, got)
 
 	// read again
@@ -42,10 +42,11 @@ func TestGetPlayerScore(t *testing.T) {
 	`)
 	defer cleanDatabase()
 
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
 	got := store.GetPlayerScore("Julia")
 
 	want := 10
+	test.AssertEqual(t, nil, err)
 	test.AssertEqual(t, want, got)
 
 }
@@ -59,11 +60,13 @@ func TestRecordPlayerScore(t *testing.T) {
 	`)
 	defer cleanDatabase()
 
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
 	store.RecordScore("Julia")
 
 	got := store.GetPlayerScore("Julia")
 	want := 11
+
+	test.AssertEqual(t, nil, err)
 	test.AssertEqual(t, want, got)
 
 }
@@ -77,12 +80,13 @@ func TestRecordScoreForNewPlayer(t *testing.T) {
 	`)
 	defer cleanDatabase()
 
-	store := NewFileSystemPlayerStore(database)
+	store, err := NewFileSystemPlayerStore(database)
 	store.RecordScore("David")
 
 	got := store.GetPlayerScore("David")
 	want := 1
 	test.AssertEqual(t, want, got)
+	test.AssertEqual(t, nil, err)
 
 }
 
@@ -102,4 +106,13 @@ func createTempFile(t *testing.T, initialData string) (*os.File, func()) {
 	}
 
 	return tmpFile, removeFile
+}
+
+func TestFileSystemStoreEmpty(t *testing.T) {
+	database, cleanDatabase := createTempFile(t, "")
+	defer cleanDatabase()
+
+	_, err := NewFileSystemPlayerStore(database)
+
+	test.AssertEqual(t, nil, err)
 }
