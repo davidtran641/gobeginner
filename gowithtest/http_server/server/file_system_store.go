@@ -3,35 +3,29 @@ package server
 import (
 	"encoding/json"
 	"io"
-	"log"
+	"os"
 )
 
 // FileSystemPlayStore is an implementation of PlayStore using file system
 type FileSystemPlayStore struct {
-	database io.ReadWriteSeeker
+	database io.Writer
 	league   League
 }
 
 // NewFileSystemPlayerStore return FileSystemPlayStore connect to given db
-func NewFileSystemPlayerStore(db io.ReadWriteSeeker) *FileSystemPlayStore {
+func NewFileSystemPlayerStore(db *os.File) *FileSystemPlayStore {
 	db.Seek(0, 0)
 	league, _ := NewLeague(db)
-	return &FileSystemPlayStore{db, league}
+
+	return &FileSystemPlayStore{
+		database: &tape{db},
+		league:   league,
+	}
 }
 
 // GetLeague returns list of players with score
 func (f *FileSystemPlayStore) GetLeague() League {
-	_, err := f.database.Seek(0, 0)
-	if err != nil {
-		log.Printf("Seek database error: %v", err)
-		return nil
-	}
-
-	league, err := NewLeague(f.database)
-	if err != nil {
-		log.Printf("Read database error: %v", err)
-	}
-	return league
+	return f.league
 }
 
 // NewLeague read players from a reader
@@ -62,6 +56,5 @@ func (f *FileSystemPlayStore) RecordScore(name string) {
 		f.league = append(f.league, Player{name, 1})
 	}
 
-	f.database.Seek(0, 0)
 	json.NewEncoder(f.database).Encode(f.league)
 }

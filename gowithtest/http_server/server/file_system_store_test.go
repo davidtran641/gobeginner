@@ -1,7 +1,6 @@
 package server
 
 import (
-	"io"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -87,7 +86,7 @@ func TestRecordScoreForNewPlayer(t *testing.T) {
 
 }
 
-func createTempFile(t *testing.T, initialData string) (io.ReadWriteSeeker, func()) {
+func createTempFile(t *testing.T, initialData string) (*os.File, func()) {
 	t.Helper()
 
 	tmpFile, err := ioutil.TempFile("", "db")
