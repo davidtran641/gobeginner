@@ -61,7 +61,7 @@ func TestRecordPlayerScore(t *testing.T) {
 	defer cleanDatabase()
 
 	store := FileSystemPlayStore{database}
-	store.RecordWin("Julia")
+	store.RecordScore("Julia")
 
 	got := store.GetPlayerScore("Julia")
 	want := 11
@@ -79,7 +79,7 @@ func TestRecordScoreForNewPlayer(t *testing.T) {
 	defer cleanDatabase()
 
 	store := FileSystemPlayStore{database}
-	store.RecordWin("David")
+	store.RecordScore("David")
 
 	got := store.GetPlayerScore("David")
 	want := 1

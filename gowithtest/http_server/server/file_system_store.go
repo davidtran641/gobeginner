@@ -45,8 +45,8 @@ func (f *FileSystemPlayStore) GetPlayerScore(name string) int {
 	return 0
 }
 
-// RecordWin record user has won
-func (f *FileSystemPlayStore) RecordWin(name string) {
+// RecordScore record user has won
+func (f *FileSystemPlayStore) RecordScore(name string) {
 	league := f.GetLeague()
 	player := league.Find(name)
 	if player != nil {
