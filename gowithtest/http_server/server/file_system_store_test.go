@@ -22,8 +22,8 @@ func TestFileSystemStore(t *testing.T) {
 	got := store.GetLeague()
 
 	want := League{
-		{"Julia", 10},
 		{"Bean", 20},
+		{"Julia", 10},
 	}
 	test.AssertEqual(t, nil, err)
 	test.AssertEqual(t, want, got)
@@ -115,4 +115,26 @@ func TestFileSystemStoreEmpty(t *testing.T) {
 	_, err := NewFileSystemPlayerStore(database)
 
 	test.AssertEqual(t, nil, err)
+}
+
+func TestLeagueSorted(t *testing.T) {
+	database, cleanDatabase := createTempFile(t, `
+	[
+		{"Name":"Julia", "Wins": 10},
+		{"Name":"Bean", "Wins": 20}
+	]
+	`)
+	defer cleanDatabase()
+
+	store, err := NewFileSystemPlayerStore(database)
+	test.AssertEqual(t, nil, err)
+
+	got := store.GetLeague()
+	want := League{
+		{"Bean", 20},
+		{"Julia", 10},
+	}
+
+	test.AssertEqual(t, want, got)
+
 }

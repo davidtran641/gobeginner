@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 )
 
 // FileSystemPlayStore is an implementation of PlayStore using file system
@@ -47,6 +48,9 @@ func initPlayerDbFile(file *os.File) error {
 
 // GetLeague returns list of players with score
 func (f *FileSystemPlayStore) GetLeague() League {
+	sort.Slice(f.league, func(i, j int) bool {
+		return f.league[i].Wins > f.league[j].Wins
+	})
 	return f.league
 }
 
