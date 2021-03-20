@@ -8,7 +8,7 @@ import (
 
 // FileSystemPlayStore is an implementation of PlayStore using file system
 type FileSystemPlayStore struct {
-	database io.Writer
+	database *json.Encoder
 	league   League
 }
 
@@ -18,7 +18,7 @@ func NewFileSystemPlayerStore(db *os.File) *FileSystemPlayStore {
 	league, _ := NewLeague(db)
 
 	return &FileSystemPlayStore{
-		database: &tape{db},
+		database: json.NewEncoder(&tape{db}),
 		league:   league,
 	}
 }
@@ -56,5 +56,5 @@ func (f *FileSystemPlayStore) RecordScore(name string) {
 		f.league = append(f.league, Player{name, 1})
 	}
 
-	json.NewEncoder(f.database).Encode(f.league)
+	f.database.Encode(f.league)
 }
