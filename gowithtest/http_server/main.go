@@ -5,11 +5,10 @@ import (
 	"net/http"
 
 	"github.com/davidtran641/gobeginner/gowithtest/http_server/server"
-	"github.com/davidtran641/gobeginner/gowithtest/http_server/store"
 )
 
 func main() {
-	s := server.NewPlayerServer(store.NewInMemoryPlayerStore())
+	s := server.NewPlayerServer(server.NewInMemoryPlayerStore())
 	handler := http.HandlerFunc(s.ServeHTTP)
 
 	if err := http.ListenAndServe(":5000", handler); err != nil {

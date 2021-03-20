@@ -1,7 +1,9 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +18,7 @@ func TestGetPlayers(t *testing.T) {
 			"Julia":  10,
 		},
 		[]string{},
+		[]Player{},
 	}
 	cases := []struct {
 		name       string
@@ -87,9 +90,10 @@ func TestStoreScore(t *testing.T) {
 			store := &StubPlayerStore{
 				map[string]int{},
 				[]string{},
+				[]Player{},
 			}
 
-			server := &PlayerServer{store}
+			server := NewPlayerServer(store)
 			server.ServeHTTP(response, request)
 
 			got := response.Body.String()
@@ -102,8 +106,45 @@ func TestStoreScore(t *testing.T) {
 	}
 }
 
+func TestLeague(t *testing.T) {
+
+	t.Run("/league", func(t *testing.T) {
+		want := []Player{
+			{"David", 10},
+			{"Julia", 19},
+			{"Bean", 3},
+		}
+		store := StubPlayerStore{nil, nil, want}
+		server := NewPlayerServer(&store)
+
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newLeagueRequest())
+
+		got := getLeagueFromResponse(t, response.Body)
+
+		test.AssertEqual(t, "application/json", response.Header().Get("content-type"))
+		test.AssertEqual(t, response.Code, http.StatusOK)
+		test.AssertEqual(t, want, got)
+	})
+}
+
 func newGetScoreRequest(player string) *http.Request {
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", player), nil)
+	return request
+}
+
+func getLeagueFromResponse(t *testing.T, body io.Reader) []Player {
+	t.Helper()
+
+	var got []Player
+	err := json.NewDecoder(body).Decode(&got)
+	test.AssertEqual(t, nil, err)
+
+	return got
+}
+
+func newLeagueRequest() *http.Request {
+	request, _ := http.NewRequest(http.MethodGet, "/league", nil)
 	return request
 }
 
@@ -115,6 +156,7 @@ func newPostWinRequest(player string) *http.Request {
 type StubPlayerStore struct {
 	scores   map[string]int
 	winCalls []string
+	league   []Player
 }
 
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
@@ -124,4 +166,8 @@ func (s *StubPlayerStore) GetPlayerScore(name string) int {
 
 func (s *StubPlayerStore) RecordScore(name string) {
 	s.winCalls = append(s.winCalls, name)
+}
+
+func (s *StubPlayerStore) GetLeague() []Player {
+	return s.league
 }
