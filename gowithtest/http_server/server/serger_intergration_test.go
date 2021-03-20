@@ -11,7 +11,7 @@ import (
 func TestRecordingWins(t *testing.T) {
 	database, cleanDatabase := createTempFile(t, "")
 	defer cleanDatabase()
-	store := &FileSystemPlayStore{database}
+	store := NewFileSystemPlayerStore(database)
 	server := NewPlayerServer(store)
 
 	player := "Pepper"
@@ -30,7 +30,7 @@ func TestRecordingWins(t *testing.T) {
 func TestRecordWin(t *testing.T) {
 	database, cleanDatabase := createTempFile(t, "")
 	defer cleanDatabase()
-	store := &FileSystemPlayStore{database}
+	store := NewFileSystemPlayerStore(database)
 	server := NewPlayerServer(store)
 
 	player := "Julia"

@@ -9,11 +9,14 @@ import (
 // FileSystemPlayStore is an implementation of PlayStore using file system
 type FileSystemPlayStore struct {
 	database io.ReadWriteSeeker
+	league   League
 }
 
-// NewPlayStore
-func NewPlayerStore(db io.ReadWriteSeeker) FileSystemPlayStore {
-	return FileSystemPlayStore{db}
+// NewFileSystemPlayerStore return FileSystemPlayStore connect to given db
+func NewFileSystemPlayerStore(db io.ReadWriteSeeker) *FileSystemPlayStore {
+	db.Seek(0, 0)
+	league, _ := NewLeague(db)
+	return &FileSystemPlayStore{db, league}
 }
 
 // GetLeague returns list of players with score
@@ -43,7 +46,7 @@ func NewLeague(reader io.Reader) (League, error) {
 
 // GetPlayerScore return player score given player name
 func (f *FileSystemPlayStore) GetPlayerScore(name string) int {
-	player := f.GetLeague().Find(name)
+	player := f.league.Find(name)
 	if player != nil {
 		return player.Wins
 	}
@@ -52,14 +55,13 @@ func (f *FileSystemPlayStore) GetPlayerScore(name string) int {
 
 // RecordScore record user has won
 func (f *FileSystemPlayStore) RecordScore(name string) {
-	league := f.GetLeague()
-	player := league.Find(name)
+	player := f.league.Find(name)
 	if player != nil {
 		player.Wins++
 	} else {
-		league = append(league, Player{name, 1})
+		f.league = append(f.league, Player{name, 1})
 	}
 
 	f.database.Seek(0, 0)
-	json.NewEncoder(f.database).Encode(league)
+	json.NewEncoder(f.database).Encode(f.league)
 }
