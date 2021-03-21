@@ -13,17 +13,13 @@ const dbFileName = "game.db.json"
 func main() {
 	fmt.Println("Let's play pocker")
 
-	db, err := os.OpenFile(dbFileName, os.O_RDWR|os.O_CREATE, 0666)
-
-	if err != nil {
-		log.Fatalf("Opening  error  %s, %v", dbFileName, err)
-	}
-
-	store, err := pocker.NewFileSystemPlayerStore(db)
+	store, close, err := pocker.NewFileSystemPlayerStoreFromFile(dbFileName)
 
 	if err != nil {
 		log.Fatalf("create player store err %v", err)
 	}
+
+	defer close()
 
 	game := pocker.NewCLI(store, os.Stdin)
 

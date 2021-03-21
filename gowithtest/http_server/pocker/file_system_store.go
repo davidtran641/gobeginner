@@ -33,6 +33,26 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayStore, error) {
 	}, nil
 }
 
+// NewFileSystemPlayerStoreFromFile return  a playStore from file path
+func NewFileSystemPlayerStoreFromFile(filePath string) (*FileSystemPlayStore, func(), error) {
+	db, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("Opening  error  %s, %v", filePath, err)
+	}
+
+	closeFunc := func() {
+		db.Close()
+	}
+
+	store, err := NewFileSystemPlayerStore(db)
+	if err != nil {
+		closeFunc()
+		return nil, nil, err
+	}
+	return store, closeFunc, nil
+}
+
 func initPlayerDbFile(file *os.File) error {
 	file.Seek(0, 0)
 	info, err := file.Stat()
