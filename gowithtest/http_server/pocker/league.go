@@ -1,4 +1,4 @@
-package server
+package pocker
 
 // League is a collection of players
 type League []Player

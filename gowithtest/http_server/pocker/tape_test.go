@@ -1,4 +1,4 @@
-package server
+package pocker
 
 import (
 	"io/ioutil"

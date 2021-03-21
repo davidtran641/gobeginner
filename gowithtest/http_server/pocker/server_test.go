@@ -1,4 +1,4 @@
-package server
+package pocker
 
 import (
 	"encoding/json"
@@ -101,7 +101,7 @@ func TestStoreScore(t *testing.T) {
 
 			test.AssertEqual(t, tc.want, got)
 			test.AssertEqual(t, tc.wantStatus, gotStatus)
-			test.AssertEqual(t, tc.wantCall, store.winCalls)
+			test.AssertEqual(t, tc.wantCall, store.WinCalls)
 		})
 	}
 }
@@ -151,23 +151,4 @@ func newLeagueRequest() *http.Request {
 func newPostWinRequest(player string) *http.Request {
 	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/players/%s", player), nil)
 	return request
-}
-
-type StubPlayerStore struct {
-	scores   map[string]int
-	winCalls []string
-	league   League
-}
-
-func (s *StubPlayerStore) GetPlayerScore(name string) int {
-	score := s.scores[name]
-	return score
-}
-
-func (s *StubPlayerStore) RecordScore(name string) {
-	s.winCalls = append(s.winCalls, name)
-}
-
-func (s *StubPlayerStore) GetLeague() League {
-	return s.league
 }

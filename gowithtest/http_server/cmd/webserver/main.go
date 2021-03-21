@@ -18,12 +18,12 @@ func main() {
 		log.Fatalf("Can't create database %s: %v", dbFileName, err)
 	}
 
-	store, err := server.NewFileSystemPlayerStore(db)
+	store, err := pocker.NewFileSystemPlayerStore(db)
 	if err != nil {
 		log.Fatal("Can't create store")
 	}
 
-	s := server.NewPlayerServer(store)
+	s := pocker.NewPlayerServer(store)
 	handler := http.HandlerFunc(s.ServeHTTP)
 
 	if err := http.ListenAndServe(":5000", handler); err != nil {
