@@ -10,9 +10,12 @@ const (
 	defaultTimeout = 10 * time.Second
 )
 
+// Racer return a ConfigurableRacer with default timeout
 func Racer(a, b string) (string, error) {
 	return ConfigurableRacer(a, b, defaultTimeout)
 }
+
+// ConfigurableRacer return the fastest result from a and b
 func ConfigurableRacer(a, b string, timeout time.Duration) (string, error) {
 	select {
 	case <-ping(a):
@@ -28,8 +31,9 @@ func ConfigurableRacer(a, b string, timeout time.Duration) (string, error) {
 func ping(url string) chan struct{} {
 	ch := make(chan struct{})
 	go func() {
+		defer close(ch)
+
 		http.Get(url)
-		close(ch)
 	}()
 	return ch
 }

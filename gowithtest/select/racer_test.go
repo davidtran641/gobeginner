@@ -9,8 +9,8 @@ import (
 
 func TestRacer(t *testing.T) {
 
-	slowServer := makeDelayServer(20)
-	fastServer := makeDelayServer(0)
+	slowServer := makeDelayServer(20 * time.Millisecond)
+	fastServer := makeDelayServer(0 * time.Millisecond)
 
 	defer fastServer.Close()
 	defer slowServer.Close()
@@ -37,7 +37,7 @@ func TestRacerTimeout(t *testing.T) {
 	defer serverA.Close()
 	defer serverB.Close()
 
-	_, err := ConfigurableRacer(serverA.URL, serverB.URL, 5*time.Millisecond)
+	_, err := ConfigurableRacer(serverA.URL, serverB.URL, 2*time.Millisecond)
 	if err == nil {
 		t.Errorf("Expected an error but didn't")
 	}
@@ -45,7 +45,7 @@ func TestRacerTimeout(t *testing.T) {
 
 func makeDelayServer(delay time.Duration) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		time.Sleep(delay * time.Microsecond)
+		time.Sleep(delay)
 		rw.WriteHeader(http.StatusOK)
 	}))
 }
