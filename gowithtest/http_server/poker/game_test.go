@@ -1,22 +1,22 @@
-package pocker_test
+package poker_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/davidtran641/gobeginner/gowithtest/http_server/pocker"
+	"github.com/davidtran641/gobeginner/gowithtest/http_server/poker"
 	"github.com/davidtran641/gobeginner/gowithtest/http_server/utils/test"
 )
 
 func TestGameStart(t *testing.T) {
-	blindAlerter := pocker.NewStubBlindAlerter()
+	blindAlerter := poker.NewStubBlindAlerter()
 
-	game := pocker.NewGame(blindAlerter, dummyPlayerStore)
+	game := poker.NewGame(blindAlerter, dummyPlayerStore)
 
 	game.Start(5)
 
-	cases := []pocker.Alert{
+	cases := []poker.Alert{
 		{0 * time.Second, 100},
 		{10 * time.Minute, 200},
 		{20 * time.Minute, 300},
@@ -35,11 +35,11 @@ func TestGameStart(t *testing.T) {
 
 func TestScheduleUser(t *testing.T) {
 	t.Run("prompt user to enter number of players", func(t *testing.T) {
-		blindAlerter := pocker.NewStubBlindAlerter()
-		game := pocker.NewGame(blindAlerter, dummyPlayerStore)
+		blindAlerter := poker.NewStubBlindAlerter()
+		game := poker.NewGame(blindAlerter, dummyPlayerStore)
 		game.Start(7)
 
-		cases := []pocker.Alert{
+		cases := []poker.Alert{
 			{0 * time.Second, 100},
 			{12 * time.Minute, 200},
 			{24 * time.Minute, 300},
@@ -50,7 +50,7 @@ func TestScheduleUser(t *testing.T) {
 	})
 }
 
-func checkScheduleCase(t *testing.T, cases []pocker.Alert, blindAlerter *pocker.StubBlindAlerter) {
+func checkScheduleCase(t *testing.T, cases []poker.Alert, blindAlerter *poker.StubBlindAlerter) {
 	t.Helper()
 
 	for i, c := range cases {
@@ -66,8 +66,8 @@ func checkScheduleCase(t *testing.T, cases []pocker.Alert, blindAlerter *pocker.
 }
 
 func TestGameFinish(t *testing.T) {
-	store := &pocker.StubPlayerStore{}
-	game := pocker.NewGame(dummyBlindAlert, store)
+	store := &poker.StubPlayerStore{}
+	game := poker.NewGame(dummyBlindAlert, store)
 	winner := "Julia"
 
 	game.Finish(winner)

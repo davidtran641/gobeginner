@@ -1,4 +1,4 @@
-package pocker
+package poker
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ const (
 	PlayerPrompt = "Please enter the number of players: "
 )
 
-// CLI an pocker CLI
+// CLI an poker CLI
 type CLI struct {
 	in   *bufio.Scanner
 	out  io.Writer
@@ -25,8 +25,8 @@ func NewCLI(in io.Reader, out io.Writer, game Game) *CLI {
 	return &CLI{bufio.NewScanner(in), out, game}
 }
 
-// PlayPocker starts playing
-func (cli *CLI) PlayPocker() {
+// PlayPoker starts playing
+func (cli *CLI) PlayPoker() {
 	fmt.Fprintf(cli.out, PlayerPrompt)
 
 	numberOfPlayer, err := strconv.Atoi(cli.readLine())

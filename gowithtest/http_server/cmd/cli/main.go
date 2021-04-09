@@ -5,15 +5,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/davidtran641/gobeginner/gowithtest/http_server/pocker"
+	"github.com/davidtran641/gobeginner/gowithtest/http_server/poker"
 )
 
 const dbFileName = "game.db.json"
 
 func main() {
-	fmt.Println("Let's play pocker")
+	fmt.Println("Let's play poker")
 
-	store, close, err := pocker.NewFileSystemPlayerStoreFromFile(dbFileName)
+	store, close, err := poker.NewFileSystemPlayerStoreFromFile(dbFileName)
 
 	if err != nil {
 		log.Fatalf("create player store err %v", err)
@@ -21,9 +21,9 @@ func main() {
 
 	defer close()
 
-	game := pocker.NewGame(pocker.BlindAlerterFunc(pocker.StdOutAlerter), store)
-	cli := pocker.NewCLI(os.Stdin, os.Stdout, game)
+	game := poker.NewGame(poker.BlindAlerterFunc(poker.StdOutAlerter), store)
+	cli := poker.NewCLI(os.Stdin, os.Stdout, game)
 
-	cli.PlayPocker()
+	cli.PlayPoker()
 
 }
