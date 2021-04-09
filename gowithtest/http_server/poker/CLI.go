@@ -11,6 +11,9 @@ import (
 const (
 	// PlayerPrompt ...
 	PlayerPrompt = "Please enter the number of players: "
+
+	// BadInputMsg ...
+	BadInputMsg = "Bad value received for number of players, please try again with a number"
 )
 
 // CLI an poker CLI
@@ -32,7 +35,8 @@ func (cli *CLI) PlayPoker() {
 	numberOfPlayer, err := strconv.Atoi(cli.readLine())
 
 	if err != nil {
-		// TODO: Handle error
+		fmt.Fprintf(cli.out, BadInputMsg)
+		return
 	}
 
 	cli.game.Start(numberOfPlayer)

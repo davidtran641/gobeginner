@@ -42,4 +42,18 @@ func TestPromptUser(t *testing.T) {
 		test.AssertEqual(t, 7, game.PlayerCount)
 
 	})
+
+	t.Run("Wrong number", func(t *testing.T) {
+		stdOut := &bytes.Buffer{}
+		in := strings.NewReader("apple\n")
+
+		game := poker.NewStubGame()
+		cli := poker.NewCLI(in, stdOut, game)
+		cli.PlayPoker()
+
+		test.AssertEqual(t, false, game.StartCalled)
+
+		want := poker.PlayerPrompt + poker.BadInputMsg
+		test.AssertEqual(t, want, stdOut.String())
+	})
 }

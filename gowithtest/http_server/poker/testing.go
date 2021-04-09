@@ -46,6 +46,7 @@ func (s *StubBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
 type StubGame struct {
 	PlayerCount int
 	Winner      string
+	StartCalled bool
 }
 
 func NewStubGame() *StubGame {
@@ -53,6 +54,7 @@ func NewStubGame() *StubGame {
 }
 
 func (p *StubGame) Start(numberOfPlayer int) {
+	p.StartCalled = true
 	p.PlayerCount = numberOfPlayer
 }
 func (p *StubGame) Finish(winner string) {
