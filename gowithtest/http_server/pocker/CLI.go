@@ -2,40 +2,49 @@ package pocker
 
 import (
 	"bufio"
+	"fmt"
 	"io"
+	"strconv"
 	"strings"
-	"time"
+)
+
+const (
+	// PlayerPrompt ...
+	PlayerPrompt = "Please enter the number of players: "
 )
 
 // CLI an pocker CLI
 type CLI struct {
-	playerStore PlayerStore
-	in          *bufio.Scanner
-	alerter     BlindAlerter
+	in   *bufio.Scanner
+	out  io.Writer
+	game Game
 }
 
 // NewCLI return a CLI
-func NewCLI(playerStore PlayerStore, in io.Reader, alerter BlindAlerter) *CLI {
-	return &CLI{playerStore, bufio.NewScanner(in), alerter}
+func NewCLI(in io.Reader, out io.Writer, game Game) *CLI {
+	return &CLI{bufio.NewScanner(in), out, game}
 }
 
 // PlayPocker starts playing
 func (cli *CLI) PlayPocker() {
+	fmt.Fprintf(cli.out, PlayerPrompt)
 
-	cli.scheduleBlindAlerts()
+	numberOfPlayer, err := strconv.Atoi(cli.readLine())
 
-	cli.in.Scan()
-	winner := extractWinner(cli.in.Text())
-	cli.playerStore.RecordScore(winner)
+	if err != nil {
+		// TODO: Handle error
+	}
+
+	cli.game.Start(numberOfPlayer)
+
+	userInput := cli.readLine()
+	winner := extractWinner(userInput)
+	cli.game.Finish(winner)
 }
 
-func (cli *CLI) scheduleBlindAlerts() {
-	blinds := []int{100, 200, 300, 400, 500, 600, 800, 1000, 2000, 4000, 8000}
-	blindTime := 0 * time.Second
-	for _, v := range blinds {
-		cli.alerter.ScheduleAlertAt(blindTime, v)
-		blindTime = blindTime + 10*time.Minute
-	}
+func (cli *CLI) readLine() string {
+	cli.in.Scan()
+	return cli.in.Text()
 }
 
 func extractWinner(input string) string {
