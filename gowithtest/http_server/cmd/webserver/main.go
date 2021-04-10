@@ -19,7 +19,10 @@ func main() {
 
 	defer close()
 
-	s := poker.NewPlayerServer(store)
+	s, err := poker.NewPlayerServer(store)
+	if err != nil {
+		log.Fatal("Couldn't start sever.", err)
+	}
 	handler := http.HandlerFunc(s.ServeHTTP)
 
 	if err := http.ListenAndServe(":5000", handler); err != nil {
