@@ -3,6 +3,7 @@ module github.com/davidtran641/gobeginner/gowithtest
 go 1.15
 
 require (
+	github.com/gorilla/websocket v1.4.2
 	github.com/kisielk/errcheck v1.6.0 // indirect
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b // indirect
