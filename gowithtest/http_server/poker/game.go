@@ -1,10 +1,13 @@
 package poker
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 // Game to manage game play
 type Game interface {
-	Start(numberOfPlayer int)
+	Start(numberOfPlayer int, alertDestination io.Writer)
 	Finish(winner string)
 }
 
@@ -20,13 +23,13 @@ func NewGame(alerter BlindAlerter, store PlayerStore) *TexasGame {
 }
 
 // Start to begin the game play
-func (p *TexasGame) Start(numberOfPlayer int) {
+func (p *TexasGame) Start(numberOfPlayer int, alertDestination io.Writer) {
 	blindIncrement := time.Duration(5+numberOfPlayer) * time.Minute
 
 	blinds := []int{100, 200, 300, 400, 500, 600, 800, 1000, 2000, 4000, 8000}
 	blindTime := 0 * time.Second
 	for _, v := range blinds {
-		p.alerter.ScheduleAlertAt(blindTime, v)
+		p.alerter.ScheduleAlertAt(blindTime, v, alertDestination)
 		blindTime = blindTime + blindIncrement
 	}
 }

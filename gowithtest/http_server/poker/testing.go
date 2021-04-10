@@ -1,6 +1,9 @@
 package poker
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 // StubPlayerStore return fake PlayerStore
 type StubPlayerStore struct {
@@ -39,7 +42,7 @@ func NewStubBlindAlerter() *StubBlindAlerter {
 	return &StubBlindAlerter{}
 }
 
-func (s *StubBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
+func (s *StubBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int, to io.Writer) {
 	s.Alerts = append(s.Alerts, Alert{duration, amount})
 }
 
@@ -53,7 +56,7 @@ func NewStubGame() *StubGame {
 	return &StubGame{}
 }
 
-func (p *StubGame) Start(numberOfPlayer int) {
+func (p *StubGame) Start(numberOfPlayer int, alertDestination io.Writer) {
 	p.StartCalled = true
 	p.PlayerCount = numberOfPlayer
 }

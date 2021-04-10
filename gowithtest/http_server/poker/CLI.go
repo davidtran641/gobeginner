@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -39,7 +40,7 @@ func (cli *CLI) PlayPoker() {
 		return
 	}
 
-	cli.game.Start(numberOfPlayer)
+	cli.game.Start(numberOfPlayer, os.Stdout)
 
 	userInput := cli.readLine()
 	winner := extractWinner(userInput)

@@ -14,7 +14,7 @@ func TestGameStart(t *testing.T) {
 
 	game := poker.NewGame(blindAlerter, dummyPlayerStore)
 
-	game.Start(5)
+	game.Start(5, dummyStdOut)
 
 	cases := []poker.Alert{
 		{0 * time.Second, 100},
@@ -37,7 +37,7 @@ func TestScheduleUser(t *testing.T) {
 	t.Run("prompt user to enter number of players", func(t *testing.T) {
 		blindAlerter := poker.NewStubBlindAlerter()
 		game := poker.NewGame(blindAlerter, dummyPlayerStore)
-		game.Start(7)
+		game.Start(7, dummyStdOut)
 
 		cases := []poker.Alert{
 			{0 * time.Second, 100},
