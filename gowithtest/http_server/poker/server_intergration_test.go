@@ -15,7 +15,7 @@ func TestRecordingWins(t *testing.T) {
 
 	test.AssertEqual(t, nil, err)
 
-	server := mustMakePlayerServer(t, store)
+	server := mustMakePlayerServer(t, store, gameDummy)
 
 	player := "Pepper"
 
@@ -34,7 +34,7 @@ func TestRecordWin(t *testing.T) {
 	database, cleanDatabase := createTempFile(t, "[]")
 	defer cleanDatabase()
 	store, err := NewFileSystemPlayerStore(database)
-	server := mustMakePlayerServer(t, store)
+	server := mustMakePlayerServer(t, store, gameDummy)
 
 	player := "Julia"
 

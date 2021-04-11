@@ -3,8 +3,10 @@ package poker
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -31,6 +33,7 @@ type PlayerStore interface {
 // PlayerServer handle the server
 type PlayerServer struct {
 	store PlayerStore
+	game  Game
 	http.Handler
 	template *template.Template
 }
@@ -40,9 +43,10 @@ const (
 )
 
 // NewPlayerServer returns a PlayerServer
-func NewPlayerServer(store PlayerStore) (*PlayerServer, error) {
+func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error) {
 	p := &PlayerServer{
 		store: store,
+		game:  game,
 	}
 	tmpl, err := template.ParseFiles(htmpTemplatePath)
 	if err != nil {
@@ -54,7 +58,7 @@ func NewPlayerServer(store PlayerStore) (*PlayerServer, error) {
 	router := http.NewServeMux()
 	router.Handle("/league", http.HandlerFunc(p.leaguageHandler))
 	router.Handle("/players/", http.HandlerFunc(p.playerHandler))
-	router.Handle("/game", http.HandlerFunc(p.game))
+	router.Handle("/game", http.HandlerFunc(p.gameHome))
 	router.Handle("/ws", http.HandlerFunc(p.webSocket))
 	p.Handler = router
 	return p, nil
@@ -96,8 +100,12 @@ func (p *PlayerServer) getPlayerName(r *http.Request) string {
 	return strings.TrimPrefix(r.URL.Path, "/players/")
 }
 
-func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
+func (p *PlayerServer) gameHome(w http.ResponseWriter, r *http.Request) {
 	p.template.Execute(w, nil)
+}
+
+type playerServerWS struct {
+	conn *websocket.Conn
 }
 
 var wsUpgradder = websocket.Upgrader{
@@ -105,17 +113,42 @@ var wsUpgradder = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
+func newPlayerServerWS(w http.ResponseWriter, r *http.Request) (*playerServerWS, error) {
 	conn, err := wsUpgradder.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("Can't upgrade connection to websocket %v", err)
+		return nil, err
+	}
+	return &playerServerWS{conn}, nil
+}
+
+func (p *playerServerWS) WaitForMsg() string {
+	_, msg, err := p.conn.ReadMessage()
+	if err != nil {
+		log.Fatalf("Can't load message %v", err)
+		return ""
+	}
+	return string(msg)
+}
+
+func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
+
+	ws, err := newPlayerServerWS(w, r)
+	if err != nil {
+		log.Fatalf("Cant create playerserver ws %v", err)
 		return
 	}
 
-	_, winnerMsg, err := conn.ReadMessage()
+	numberOfPlayerMsg := ws.WaitForMsg()
+	numberOfPlayer, err := strconv.Atoi(string(numberOfPlayerMsg))
 	if err != nil {
-		log.Fatalf("Can't read message: %v", err)
+		log.Fatalf("Can't read number of players: %v", err)
 		return
 	}
-	p.store.RecordScore(string(winnerMsg))
+
+	// TODO: Handle alert
+	p.game.Start(numberOfPlayer, ioutil.Discard)
+
+	winner := ws.WaitForMsg()
+	p.game.Finish(winner)
 }

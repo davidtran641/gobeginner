@@ -14,6 +14,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var (
+	gameDummy = NewStubGame()
+)
+
 func TestGetPlayers(t *testing.T) {
 	store := &StubPlayerStore{
 		map[string]int{
@@ -51,7 +55,7 @@ func TestGetPlayers(t *testing.T) {
 			request := newGetScoreRequest(tc.name)
 			response := httptest.NewRecorder()
 
-			server := mustMakePlayerServer(t, store)
+			server := mustMakePlayerServer(t, store, gameDummy)
 			server.ServeHTTP(response, request)
 
 			got := response.Body.String()
@@ -96,7 +100,7 @@ func TestStoreScore(t *testing.T) {
 				[]Player{},
 			}
 
-			server := mustMakePlayerServer(t, store)
+			server := mustMakePlayerServer(t, store, gameDummy)
 			server.ServeHTTP(response, request)
 
 			got := response.Body.String()
@@ -118,7 +122,7 @@ func TestLeague(t *testing.T) {
 			{"Bean", 3},
 		}
 		store := StubPlayerStore{nil, nil, want}
-		server := mustMakePlayerServer(t, &store)
+		server := mustMakePlayerServer(t, &store, gameDummy)
 
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, newLeagueRequest())
@@ -133,7 +137,7 @@ func TestLeague(t *testing.T) {
 
 func TestGame(t *testing.T) {
 	t.Run("GET /game return 200", func(t *testing.T) {
-		server := mustMakePlayerServer(t, &StubPlayerStore{})
+		server := mustMakePlayerServer(t, &StubPlayerStore{}, gameDummy)
 
 		request, _ := http.NewRequest(http.MethodGet, "/game", nil)
 
@@ -144,21 +148,23 @@ func TestGame(t *testing.T) {
 	})
 
 	t.Run("websocket save winner", func(t *testing.T) {
+		game := NewStubGame()
 		store := NewStubPlayerStore()
 		winner := "Julia"
-		server := httptest.NewServer(mustMakePlayerServer(t, store))
+		server := httptest.NewServer(mustMakePlayerServer(t, store, game))
 		defer server.Close()
 
 		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
-
 		ws := mustDialWS(t, wsURL)
 		defer ws.Close()
 
+		mustWriteWSMessage(t, ws, "3")
 		mustWriteWSMessage(t, ws, winner)
 
 		time.Sleep(10 * time.Millisecond)
 
-		test.AssertEqual(t, winner, store.WinCalls[0])
+		test.AssertEqual(t, 3, game.PlayerCount)
+		test.AssertEqual(t, winner, game.Winner)
 	})
 }
 
@@ -180,10 +186,10 @@ func mustDialWS(t *testing.T, url string) *websocket.Conn {
 	return ws
 }
 
-func mustMakePlayerServer(t *testing.T, store PlayerStore) *PlayerServer {
+func mustMakePlayerServer(t *testing.T, store PlayerStore, game Game) *PlayerServer {
 	t.Helper()
 
-	server, err := NewPlayerServer(store)
+	server, err := NewPlayerServer(store, game)
 	if err != nil {
 
 		t.Fatalf("Can't create server %v", err)

@@ -19,7 +19,8 @@ func main() {
 
 	defer close()
 
-	s, err := poker.NewPlayerServer(store)
+	game := poker.NewGame(poker.BlindAlerterFunc(poker.Alerter), store)
+	s, err := poker.NewPlayerServer(store, game)
 	if err != nil {
 		log.Fatal("Couldn't start sever.", err)
 	}
