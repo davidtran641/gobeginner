@@ -50,6 +50,8 @@ type StubGame struct {
 	PlayerCount int
 	Winner      string
 	StartCalled bool
+
+	BlindAlert []byte
 }
 
 func NewStubGame() *StubGame {
@@ -59,6 +61,8 @@ func NewStubGame() *StubGame {
 func (p *StubGame) Start(numberOfPlayer int, alertDestination io.Writer) {
 	p.StartCalled = true
 	p.PlayerCount = numberOfPlayer
+
+	alertDestination.Write(p.BlindAlert)
 }
 func (p *StubGame) Finish(winner string) {
 	p.Winner = winner

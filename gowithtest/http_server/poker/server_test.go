@@ -148,7 +148,9 @@ func TestGame(t *testing.T) {
 	})
 
 	t.Run("websocket save winner", func(t *testing.T) {
+		blindAlert := "Blind is 100"
 		game := NewStubGame()
+		game.BlindAlert = []byte(blindAlert)
 		store := NewStubPlayerStore()
 		winner := "Julia"
 		server := httptest.NewServer(mustMakePlayerServer(t, store, game))
@@ -161,11 +163,48 @@ func TestGame(t *testing.T) {
 		mustWriteWSMessage(t, ws, "3")
 		mustWriteWSMessage(t, ws, winner)
 
-		time.Sleep(10 * time.Millisecond)
+		retryWithin(t, 100*time.Millisecond, func() bool {
+			return winner == game.Winner
+		})
 
-		test.AssertEqual(t, 3, game.PlayerCount)
 		test.AssertEqual(t, winner, game.Winner)
+		test.AssertEqual(t, 3, game.PlayerCount)
+
+		within(t, 10*time.Millisecond, func() {
+			_, gotBlindAlert, _ := ws.ReadMessage()
+			test.AssertEqual(t, blindAlert, string(gotBlindAlert))
+		})
 	})
+}
+
+func retryWithin(t *testing.T, d time.Duration, assert func() bool) bool {
+	t.Helper()
+
+	deadline := time.Now().Add(d)
+	for time.Now().Before(deadline) {
+		if assert() {
+			return true
+		}
+	}
+	return false
+}
+
+func within(t *testing.T, d time.Duration, assert func()) {
+	t.Helper()
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		assert()
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-time.After(d):
+		t.Error("timeout")
+	case <-done:
+	}
+
 }
 
 func mustWriteWSMessage(t *testing.T, conn *websocket.Conn, message string) {

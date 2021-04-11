@@ -3,7 +3,6 @@ package poker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -122,13 +121,21 @@ func newPlayerServerWS(w http.ResponseWriter, r *http.Request) (*playerServerWS,
 	return &playerServerWS{conn}, nil
 }
 
-func (p *playerServerWS) WaitForMsg() string {
-	_, msg, err := p.conn.ReadMessage()
+func (w *playerServerWS) WaitForMsg() string {
+	_, msg, err := w.conn.ReadMessage()
 	if err != nil {
 		log.Fatalf("Can't load message %v", err)
 		return ""
 	}
 	return string(msg)
+}
+
+func (w *playerServerWS) Write(p []byte) (n int, err error) {
+	err = w.conn.WriteMessage(websocket.TextMessage, p)
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
 }
 
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -146,8 +153,7 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Handle alert
-	p.game.Start(numberOfPlayer, ioutil.Discard)
+	p.game.Start(numberOfPlayer, ws)
 
 	winner := ws.WaitForMsg()
 	p.game.Finish(winner)
